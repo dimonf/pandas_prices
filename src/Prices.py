@@ -60,3 +60,15 @@ class Prices:
             tmp_df.columns = ['curr_pair','date','price']
             #aggregate prices for same date
             return tmp_df.groupby(['curr_pair','date'])['price'].mean()
+
+    def get_price(self, curr_pair, date):
+        """
+        returnes the latest price
+        curr_pair: "EUR:USD". Must match exactly stored value (index first level)
+        date: "2019-01-01". Will match nearest value if not exact match found
+
+        returns: the exact or nearest value
+        """
+        #TODO: return tuple (actual_picked_date, price)
+        location = self.prices.loc[curr_pair].index.get_loc(date, method='nearest')
+        return self.prices.iloc[location].iloc[-1]
