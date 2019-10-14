@@ -30,7 +30,7 @@ class Prices:
 
         def test_record(s):
             """
-            applies for each row in a dataframe and returns True if 
+            applies for each row in a dataframe and returns True if
             the data is valid for rate calculation
             """
             if s[[col_curr_name,col_date,  col_curr_amount, col_ref_amount]].isna().any():
@@ -42,7 +42,7 @@ class Prices:
             return True
 
         def calculate_price(s):
-            rec_curr_name = s[col_curr_name].upper()
+            rec_curr_name = s[col_curr_name]
             curr_pair = ':'.join(sorted([rec_curr_name, ref_curr_name]))
             if ref_curr_name > rec_curr_name:
                 curr_price = s[col_ref_amount] / s[col_curr_amount]
@@ -52,11 +52,11 @@ class Prices:
             return [curr_pair, s[col_date], curr_price]
 
         if isinstance(data, pd.DataFrame):
-            data['curr'] = data['curr'].str.upper()
+            data.loc[:,col_curr_name] = data[col_curr_name].str.upper()
             #remove records for which prices cannot be calculated
-            data = data.loc[data.apply(test_record, result_type='reduce',axis=1)]
+            data_a = data.loc[data.apply(test_record, result_type='reduce',axis=1)]
             #
-            tmp_df = data.apply(calculate_price, result_type='expand', axis=1)
+            tmp_df = data_a.apply(calculate_price, result_type='expand', axis=1)
             tmp_df.columns = ['curr_pair','date','price']
             #aggregate prices for same date
             return tmp_df.groupby(['curr_pair','date'])['price'].mean()
