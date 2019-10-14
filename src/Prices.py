@@ -3,9 +3,17 @@ import pandas as pd
 
 
 class Prices:
-    def __init__(self, df=None, mapping=None):
-        if df is not None:
-            self.prices = self.calculate_prices(df, mapping)
+    def __init__(self, data=None, mapping=None):
+        if isinstance(data, pd.DataFrame):
+            self.prices = self.calculate_prices(data, mapping)
+        else:
+            self.prices = pd.read_csv(data, index_col=[0,1], parse_dates=True, header=0)
+
+    def prices_to_csv(self, filename):
+        """
+        dump prices data to file <filename>
+        """
+        self.prices.to_csv(filename, header=True)
 
     def calculate_prices(self, data, mapping=None):
         """data can be:
@@ -51,15 +59,14 @@ class Prices:
 
             return [curr_pair, s[col_date], curr_price]
 
-        if isinstance(data, pd.DataFrame):
-            data.loc[:,col_curr_name] = data[col_curr_name].str.upper()
-            #remove records for which prices cannot be calculated
-            data_a = data.loc[data.apply(test_record, result_type='reduce',axis=1)]
-            #
-            tmp_df = data_a.apply(calculate_price, result_type='expand', axis=1)
-            tmp_df.columns = ['curr_pair','date','price']
-            #aggregate prices for same date
-            return tmp_df.groupby(['curr_pair','date'])['price'].mean()
+        data.loc[:,col_curr_name] = data[col_curr_name].str.upper()
+        #remove records for which prices cannot be calculated
+        data_a = data.loc[data.apply(test_record, result_type='reduce',axis=1)]
+        #
+        tmp_df = data_a.apply(calculate_price, result_type='expand', axis=1)
+        tmp_df.columns = ['curr_pair','date','price']
+        #aggregate prices for same date
+        return tmp_df.groupby(['curr_pair','date'])['price'].mean()
 
     def get_price(self, curr_pair, date):
         """

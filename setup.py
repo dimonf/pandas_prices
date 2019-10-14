@@ -7,7 +7,7 @@ requirements = ["pandas"]
 
 setuptools.setup(
         name="pandas_prices",
-        version="0.0.2",
+        version="0.1.0",
         author="Dmitri Kourbatsky",
         author_email="camel109@gmail.com",
         decription="calculate and allow for queries exchange rates database",
