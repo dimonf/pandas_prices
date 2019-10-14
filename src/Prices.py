@@ -28,6 +28,19 @@ class Prices:
         col_ref_amount  = cols['col_ref_amount']
         ref_curr_name   = cols['col_ref_amount'].upper()
 
+        def test_record(s):
+            """
+            applies for each row in a dataframe and returns True if 
+            the data is valid for rate calculation
+            """
+            if s[[col_curr_name,col_date,  col_curr_amount, col_ref_amount]].isna().any():
+                return False
+            elif s[col_curr_name] == ref_curr_name:
+                return False
+            elif s[col_ref_amount] == 0 or s[col_curr_amount] == 0:
+                return False
+            return True
+
         def calculate_price(s):
             rec_curr_name = s[col_curr_name].upper()
             curr_pair = ':'.join(sorted([rec_curr_name, ref_curr_name]))
@@ -39,8 +52,9 @@ class Prices:
             return [curr_pair, s[col_date], curr_price]
 
         if isinstance(data, pd.DataFrame):
-            #leave only records where currency differs from base currency
-            data = data[data[col_curr_name].str.upper() != ref_curr_name]
+            data['curr'] = data['curr'].str.upper()
+            #remove records for which prices cannot be calculated
+            data = data.loc[data.apply(test_record, result_type='reduce',axis=1)]
             #
             tmp_df = data.apply(calculate_price, result_type='expand', axis=1)
             tmp_df.columns = ['curr_pair','date','price']
